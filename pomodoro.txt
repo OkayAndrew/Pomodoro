@@ -1,0 +1,31 @@
+
+I want the site to be very minimalist, with an SNES-era pixel-art aesthetic. I've attached a PDF, pomodoroSite, with the basic concept for the site on the first page and examples of what the site should look like based on various user interactions on the subsequent pages.
+
+The game should get the user's light or dark mode preference from the web browser and display black text on a white background or white text on a black background as appropriate.
+
+By default, I only want to show the Main Image and the text "POMODORO", as shown on Page 2 of the PDF. For now, the Main Image should just show a PNG file in the same folder as the main HTML file.
+
+If the user moves their mouse on the page, the Timer and Icons should fade in, as shown on Page 3 of the PDF. If the user stops moving their mouse on the page, they should fade back out.
+
+The site has five time-related variables: workTime, shortBreakTime, longBreakTime, currentCycles, and cyclesPerLongBreak with default values of 25 minutes, 5 minutes, 15 minutes, 0, and 4 respectively.
+
+The Timer should display minutes and seconds. When the page is loaded it enters the Work state and displays 00:00, counting upward. When the site is in the Work state and the Timer reaches WorkTime it should increase the currentCycles by 1. If currentCycles is less than the cyclesPerLongBreak, it should enter the Short Break state, otherwise it should enter the Long Break state.
+
+When the site enters the Short Break state it should reset Timer to 00:00 and count upward until it reaches the shortBreakTime, at which point it resets Timer and goes back to the Work state. When the site enters the Long Break state it should reset currentCycles to 0 and Timer to 00:00 and count upward until it reaches the longBreakTime, at which point it resets Timer and goes back to the Work state.
+
+The Icons area has a set of horizontally distributed icons, which display 32x32 pixel PNG files in the same folder as the main HTML file. From left to right the icons are Tasks, Settings, and Learning. If the user hovers their mouse over any of these three images it should swap to a highlighted version of the icon image. If the user clicks on an icon the site should show a specific subtitle for that icon as well as a section with details and one or more buttons.
+
+The Tasks icon has two variables: plannedText and completedText. If the user clicks on the Tasks icon, the subtitle says "What are you working on?", as shown on Page 4 of the PDF. The details section should be a text-entry field where the user can enter text or edit what they entered previously. There are two buttons at the bottom that say "planned" and "completed", with "planned" selected initially and the plannedText showing in the text-entry field. If the user clicks the completed button the subtitle should change to "What did you accomplish?" and the text-entry field should show the completedText, as shown on Page 5 of the PDF. Every time the user clicks away from the text-entry field the appropriate variable should be updated to match the contents of that field.
+
+If the user clicks on the Settings icon, the subtitle says "How do you want to work?", as shown on Page 6 of the PDF. The details section has four lines of text, each with a text-entry field that has to be a number. These lines of text are "Work Time (min):", "Short Break (min):", "Long Break (min):", and "Cycles per Long Break:". The text-entry fields should be populated with the current values of the workTime, shortBreakTime, longBreakTime, and cyclesPerLongBreak variables. There are two buttons for "update" and "reset". If the "update" button is pressed, the Timer goes to 00:00, currentCycles goes to 0, and the other variables are updated to match the values in the corresponding text-entry fields. If the "reset" button is pressed the text-entry fields are overwritten with the current values of the four variables.
+
+If the user clicks on the Learning icon, the subtitle says "What is the Pomodoro technique?", as shown on Page 7 of the PDF. The details section has a text box that can't be edited by the user, which briefly describes the concept. There are two buttons that say "about" and "tips", with the about button selected by default. If the user clicks the tips button, the text in the details section changes to provide a few tips to the user, as shown on Page 8 of the PDF.
+
+Review all of this and let me know if you have any questions about the site before building it.
+
+***
+
+TODO:
+- some sort of notification when it hits the end of a timer, including a chime that sounds different based on what state just started
+
+

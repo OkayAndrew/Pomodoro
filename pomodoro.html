@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Pomodoro</title>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #000000;
+            --btn-active: #dddddd;
+            --font-family: "DotGothic16", sans-serif;
+        }
+
+        /* Auto Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --text-color: #ffffff;
+                --border-color: #ffffff;
+                --btn-active: #333333;
+            }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding-top: 50px;
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 18px;
+        }
+
+        h1 {
+            letter-spacing: 0.5em;
+            margin-right: -0.5em; /* Offset letter spacing for perfect center */
+            font-size: 30px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        img {
+            image-rendering: pixelated; /* Keeps pixel art sharp */
+        }
+
+        #main-image {
+            margin-bottom: 10px;
+        }
+
+        /* Interactive Area (Fades in/out) */
+        #interactive-area {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #timer-display {
+            font-weight: normal;
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #phase-indicator {
+            font-size: 24px;
+            opacity: 0.7;
+        }
+
+        .icons-container {
+            display: flex;
+            gap: 60px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .icon {
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Dynamic Detail Sections */
+        .details-section {
+            display: none; /* Hidden by default */
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .details-section.active {
+            display: flex;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Form elements matching SNES blocky aesthetic */
+        textarea {
+            width: 90%;
+            height: 100px;
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            font-family: var(--font-family);
+            font-size: 18px;
+            padding: 10px;
+            resize: none;
+            margin-bottom: 20px;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .settings-row input {
+            width: 60px;
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            font-family: var(--font-family);
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .learning-text {
+            width: 90%;
+            font-size: 18px;
+            text-align: left;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            font-family: var(--font-family);
+            font-size: 18px;
+            padding: 5px 15px;
+            cursor: pointer;
+            text-transform: lowercase;border-radius: 8px;
+        }
+
+        button.selected {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        button:hover {
+            background: var(--btn-active);
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+    <img id="main-image" src="main_images/main00.png" alt="Main Character">
+    <h1>POMODORO</h1>
+
+    <div id="interactive-area">
+        
+        <div id="timer-display">
+            <span id="phase-indicator">Work</span>
+            <span id="timer-text">00:00</span>
+        </div>
+
+        <div class="icons-container">
+            <img src="icons/tasks.png" id="icon-tasks" class="icon" alt="Tasks">
+            <img src="icons/settings.png" id="icon-settings" class="icon" alt="Settings">
+            <img src="icons/learning.png" id="icon-learning" class="icon" alt="Learning">
+        </div>
+
+        <div id="section-tasks" class="details-section">
+            <div id="subtitle-tasks" class="subtitle">What are you working on?</div>
+            <textarea id="task-input"></textarea>
+            <div class="buttons-container">
+                <button id="btn-planned" class="selected">planned</button>
+                <button id="btn-completed">completed</button>
+            </div>
+        </div>
+
+        <div id="section-settings" class="details-section">
+            <div class="subtitle">How do you want to work?</div>
+            <div class="settings-row">
+                <span>Work Time (min):</span>
+                <input type="number" id="in-work" min="1" max="99">
+            </div>
+            <div class="settings-row">
+                <span>Short Break (min):</span>
+                <input type="number" id="in-short" min="1" max="99">
+            </div>
+            <div class="settings-row">
+                <span>Long Break (min):</span>
+                <input type="number" id="in-long" min="1" max="99">
+            </div>
+            <div class="settings-row">
+                <span>Cycles per Long Break:</span>
+                <input type="number" id="in-cycles" min="1" max="10">
+            </div>
+            <div class="buttons-container" style="margin-top: 15px;">
+                <button id="btn-update">update</button>
+                <button id="btn-reset">reset</button>
+            </div>
+        </div>
+
+        <div id="section-learning" class="details-section">
+            <div class="subtitle">What is the Pomodoro technique?</div>
+            <div id="learning-content" class="learning-text"></div>
+            <div class="buttons-container">
+                <button id="btn-about" class="selected">about</button>
+                <button id="btn-tips">tips</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- VARIABLES & STATE ---
+        let workTime = 25, shortBreakTime = 5, longBreakTime = 15;
+        let cyclesPerLongBreak = 4, currentCycles = 0;
+        let plannedText = "", completedText = "";
+        
+        let currentState = "Work"; // "Work", "Short Break", "Long Break"
+        let elapsedSeconds = 0;
+        let timerInterval = null;
+
+        // --- IMAGE BLINKING LOGIC ---
+        let currentImageIndex = 9;
+        let isBlinking = false;
+
+        function updateMainImage() {
+        const mainImg = document.getElementById('main-image');
+            
+            // Format the number to always be two digits (e.g., "00", "05", "11")
+            const paddedIndex = String(currentImageIndex).padStart(2, '0');
+            
+            if (isBlinking) {
+                mainImg.src = `main_images/main${paddedIndex}_blink.png`;
+            } else {
+                mainImg.src = `main_images/main${paddedIndex}.png`;
+            }
+        }
+
+        // --- FADE IN/OUT LOGIC ---
+        let fadeTimeout;
+        const interactiveArea = document.getElementById('interactive-area');
+
+        ['mousemove', 'keydown'].forEach(event => {
+            document.addEventListener(event, () => {
+                // Instantly show everything
+                interactiveArea.style.opacity = '1';
+                clearTimeout(fadeTimeout);
+                
+                fadeTimeout = setTimeout(() => {
+                    // 1. Start the visual fade-out
+                    interactiveArea.style.opacity = '0';
+                    
+                    // 2. Wait for the 0.5s CSS transition to finish before removing the content
+                    setTimeout(() => {
+                        // Double-check that it's still faded out (prevents a glitch if the user moves the mouse mid-fade)
+                        if (interactiveArea.style.opacity === '0') {
+                            Object.values(sections).forEach(sec => sec.classList.remove('active'));
+                        }
+                    }, 500); // 500ms perfectly matches your CSS transition time
+                    
+                }, 3000);
+            });
+        });
+
+        // --- TIMER LOGIC ---
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${seconds}`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer-text').innerText = formatTime(elapsedSeconds);
+            document.getElementById('phase-indicator').innerText = currentState;
+        }
+
+        function switchState(newState) {
+            currentState = newState;
+            elapsedSeconds = 0;
+            // You can easily swap main.png here later if you want state-specific images!
+        }
+
+        function tick() {
+            elapsedSeconds++;
+            
+            let limitInSeconds = 0;
+            if (currentState === "Work") limitInSeconds = workTime * 60;
+            else if (currentState === "Short Break") limitInSeconds = shortBreakTime * 60;
+            else if (currentState === "Long Break") limitInSeconds = longBreakTime * 60;
+
+            // --- RIPENING LOGIC ---
+            // Calculate how far along we are (from 0.0 to 1.0)
+            const progress = elapsedSeconds / limitInSeconds;
+            // Turn that into an integer from 0 to 11 (since you have 12 images)
+            currentImageIndex = Math.floor(progress * 12);
+            // Cap it at 11 just in case the math rounds up at the exact end of the timer
+            if (currentImageIndex > 11) currentImageIndex = 11;
+            
+            updateMainImage();
+            // ----------------------
+
+            if (elapsedSeconds >= limitInSeconds) {
+                if (currentState === "Work") {
+                    currentCycles++;
+                    if (currentCycles < cyclesPerLongBreak) {
+                        switchState("Short Break");
+                    } else {
+                        switchState("Long Break");
+                    }
+                } else if (currentState === "Short Break") {
+                    switchState("Work");
+                } else if (currentState === "Long Break") {
+                    currentCycles = 0;
+                    switchState("Work");
+                }
+            }
+            updateTimerDisplay();
+        }
+
+        // Start timer
+        timerInterval = setInterval(tick, 1000);
+        updateTimerDisplay();
+
+        // --- ICON HOVER & CLICK LOGIC ---
+        const icons = {
+            tasks: document.getElementById('icon-tasks'),
+            settings: document.getElementById('icon-settings'),
+            learning: document.getElementById('icon-learning')
+        };
+
+        const sections = {
+            tasks: document.getElementById('section-tasks'),
+            settings: document.getElementById('section-settings'),
+            learning: document.getElementById('section-learning')
+        };
+
+        function setupIcon(name, baseSrc, hoverSrc) {
+            const icon = icons[name];
+            icon.addEventListener('mouseover', () => icon.src = hoverSrc);
+            icon.addEventListener('mouseout', () => icon.src = baseSrc);
+            icon.addEventListener('click', () => {
+                // Hide all sections
+                Object.values(sections).forEach(sec => sec.classList.remove('active'));
+                // Show clicked section
+                sections[name].classList.add('active');
+                
+                // Specific setup for sections upon opening
+                if(name === 'settings') loadSettingsToUI();
+                if(name === 'learning') loadLearningContent('about');
+            });
+        }
+
+        setupIcon('tasks', 'icons/tasks.png', 'icons/tasks_hover.png');
+        setupIcon('settings', 'icons/settings.png', 'icons/settings_hover.png');
+        setupIcon('learning', 'icons/learning.png', 'icons/learning_hover.png');
+
+        // --- TASKS SECTION LOGIC ---
+        const btnPlanned = document.getElementById('btn-planned');
+        const btnCompleted = document.getElementById('btn-completed');
+        const taskInput = document.getElementById('task-input');
+        const subtitleTasks = document.getElementById('subtitle-tasks');
+        let activeTaskTab = "planned";
+
+        function switchTaskTab(tab) {
+            activeTaskTab = tab;
+            if (tab === "planned") {
+                btnPlanned.classList.add('selected');
+                btnCompleted.classList.remove('selected');
+                subtitleTasks.innerText = "What are you working on?";
+                taskInput.value = plannedText;
+            } else {
+                btnCompleted.classList.add('selected');
+                btnPlanned.classList.remove('selected');
+                subtitleTasks.innerText = "What did you accomplish?";
+                taskInput.value = completedText;
+            }
+        }
+
+        btnPlanned.addEventListener('click', () => switchTaskTab('planned'));
+        btnCompleted.addEventListener('click', () => switchTaskTab('completed'));
+
+        // Save text on blur
+        taskInput.addEventListener('blur', () => {
+            if (activeTaskTab === "planned") plannedText = taskInput.value;
+            else completedText = taskInput.value;
+        });
+
+        // --- SETTINGS SECTION LOGIC ---
+        const inWork = document.getElementById('in-work');
+        const inShort = document.getElementById('in-short');
+        const inLong = document.getElementById('in-long');
+        const inCycles = document.getElementById('in-cycles');
+
+        function loadSettingsToUI() {
+            inWork.value = workTime;
+            inShort.value = shortBreakTime;
+            inLong.value = longBreakTime;
+            inCycles.value = cyclesPerLongBreak;
+        }
+
+        document.getElementById('btn-update').addEventListener('click', () => {
+            workTime = parseInt(inWork.value) || 25;
+            shortBreakTime = parseInt(inShort.value) || 5;
+            longBreakTime = parseInt(inLong.value) || 15;
+            cyclesPerLongBreak = parseInt(inCycles.value) || 4;
+            
+            // Reset state
+            currentCycles = 0;
+            switchState("Work");
+            updateTimerDisplay();
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', loadSettingsToUI);
+
+        // --- LEARNING SECTION LOGIC ---
+        const btnAbout = document.getElementById('btn-about');
+        const btnTips = document.getElementById('btn-tips');
+        const learningContent = document.getElementById('learning-content');
+
+        const aboutText = `Pomodoro is a time management method developed by Francesco Cirillo in the late 1980s.<br><br>This technique uses a timer to break down work into intervals of productivity and short breaks, with an occasional longer break.<br><br>It is designed to maximize mental sharpness, combat procrastination, and prevent burnout.`;
+        
+        const tipsText = `• Avoid multitasking: During a 25-minute block, give your full attention to the chosen task.<br><br>• Handle interruptions: If a distraction arises, jot it down for later or reset the Pomodoro to start fresh.<br><br>• Adapt as needed: Adjust the intervals to better match your workflow and attention span.`;
+
+        function loadLearningContent(tab) {
+            if (tab === 'about') {
+                btnAbout.classList.add('selected');
+                btnTips.classList.remove('selected');
+                learningContent.innerHTML = aboutText;
+            } else {
+                btnTips.classList.add('selected');
+                btnAbout.classList.remove('selected');
+                learningContent.innerHTML = tipsText;
+            }
+        }
+
+        btnAbout.addEventListener('click', () => loadLearningContent('about'));
+        btnTips.addEventListener('click', () => loadLearningContent('tips'));
+
+        // --- BLINKING LOGIC ---
+        function scheduleNextBlink() {
+            // Pick a random delay between 2 seconds (2000ms) and 6 seconds (6000ms)
+            const randomDelay = Math.random() * 4000 + 2000;
+            
+            setTimeout(() => {
+                // Close eyes
+                isBlinking = true;
+                updateMainImage();
+                
+                // Keep eyes closed for 150 milliseconds (a quick, natural blink)
+                setTimeout(() => {
+                    isBlinking = false;
+                    updateMainImage();
+                    
+                    // Loop it by scheduling the next blink
+                    scheduleNextBlink();
+                }, 150);
+                
+            }, randomDelay);
+        }
+
+        // Start the blinking cycle when the page loads
+        scheduleNextBlink();
+
+    </script>
+</body>
+</html>
