@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pixel Pomodoro</title>
+    <link id="favicon" rel="icon" type="image/png" href="icons/main00.png">
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -258,16 +259,23 @@
         let isBlinking = false;
 
         function updateMainImage() {
-        const mainImg = document.getElementById('main-image');
+            const mainImg = document.getElementById('main-image');
+            const favicon = document.getElementById('favicon');
             
             // Format the number to always be two digits (e.g., "00", "05", "11")
             const paddedIndex = String(currentImageIndex).padStart(2, '0');
-            
+
+            let mainImagePath = "";
+            let faviconPath = "";
             if (isBlinking) {
-                mainImg.src = `main_images/main${paddedIndex}_blink.png`;
+                mainImagePath = `main_images/main${paddedIndex}_blink.png`;
+                faviconPath = `icons/main${paddedIndex}.png`;
             } else {
-                mainImg.src = `main_images/main${paddedIndex}.png`;
+                mainImagePath = `main_images/main${paddedIndex}.png`;
+                faviconPath = `icons/main${paddedIndex}.png`;
             }
+            mainImg.src = mainImagePath;
+            favicon.href = faviconPath;
         }
 
         // --- FADE IN/OUT LOGIC ---
